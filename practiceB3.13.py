@@ -84,7 +84,7 @@ class TopLevelTag(Tag):
 
 class HTML(TopLevelTag):
     """Класс HTML определяет, куда сохранять вывод: на экран через print или в файл."""
-    def __init__(self, tag="html", output=None):
+    def __init__(self, output=None, tag="html"):
         super().__init__()
         self.tag = tag
         self.output = output
@@ -92,7 +92,7 @@ class HTML(TopLevelTag):
     def __enter__(self):
         return self
 
-    def __exit__(self, exc_type, exc_val, traceback):
+    def __exit__(self, exc_type, exc_val, traceback, *args, **kwargs):
         # Преобразование словаря с атрибутами в строку
         attrs = []
         for attribute, value in self.attributes.items():
@@ -110,19 +110,19 @@ class HTML(TopLevelTag):
         str_inner_code = "".join(str(x) for x in self.inner_code)
         result_string = str(first_line + str_inner_code + "\n" + second_line)
         # Вывод в консоль либо в файл в зависимости от значения output 
-        if self.output is None:
-            print(result_string)
-        else:
+        if self.output is not None:
             with open(self.output, "w") as opfile:
                 opfile.write(result_string)
+        else:
+            print(result_string)
 
     def __iadd__(self, other):
         self.inner_code.append(other)
         return self
 
 # Функция проверки. Переделал момент с указанием атрибутов(указание атрибутов как здесь ИМХО более понятно для человека кто не видит что под капотом). В связи с этим можно использовать зарезервированное слово class.
-def main(output=None):
-    with HTML(output=None) as doc:
+def main(*args, **kwargs):
+    with HTML(*args, **kwargs) as doc:
         with TopLevelTag("head") as head:
             with Tag("title") as title:
                 title.text = "hello"
@@ -152,5 +152,5 @@ def main(output=None):
             doc += body
 
 if __name__ == "__main__":
-    main()
+    main(output="test.html")
     
